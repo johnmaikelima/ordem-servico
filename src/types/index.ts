@@ -42,7 +42,7 @@ export interface OrdemServico {
     total: number;
   }>;
   produtos: Array<{
-    descricao: string;
+    produto: string | Produto;
     quantidade: number;
     precoUnitario: number;
     total: number;
