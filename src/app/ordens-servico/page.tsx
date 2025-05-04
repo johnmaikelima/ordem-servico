@@ -178,10 +178,10 @@ export default function OrdensServicoPage() {
                   {os.numero}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {os.cliente?.nome || 'N/A'}
+                  {typeof os.cliente === 'object' && os.cliente ? os.cliente.nome : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {os.prestador?.nome || 'N/A'}
+                  {typeof os.prestador === 'object' && os.prestador ? os.prestador.nome : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(os.dataPrevisao).toLocaleDateString('pt-BR')}
