@@ -64,15 +64,26 @@ interface Props {
 export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCancel, initialData, isEditing }: Props) {
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
+      const clienteId = typeof initialData.cliente === 'object' && initialData.cliente ? initialData.cliente._id : initialData.cliente;
+      const prestadorId = typeof initialData.prestador === 'object' && initialData.prestador ? initialData.prestador._id : initialData.prestador;
+      const dataPrevisao = initialData.dataPrevisao ? new Date(initialData.dataPrevisao).toISOString().split('T')[0] : '';
+      const produtosConvertidos = initialData.produtos.map(p => ({
+        ...p,
+        produto: typeof p.produto === 'object' && p.produto ? p.produto._id : p.produto
+      }));
+
       return {
-        ...initialData,
-        cliente: typeof initialData.cliente === 'object' && initialData.cliente ? initialData.cliente._id : initialData.cliente || '',
-        prestador: typeof initialData.prestador === 'object' && initialData.prestador ? initialData.prestador._id : initialData.prestador || '',
-        dataPrevisao: initialData.dataPrevisao ? new Date(initialData.dataPrevisao).toISOString().split('T')[0] : '',
-        produtos: initialData.produtos.map(p => ({
-          ...p,
-          produto: typeof p.produto === 'object' && p.produto ? p.produto._id : p.produto
-        }))
+        numero: initialData.numero || '',
+        status: initialData.status || 'aberto',
+        cliente: clienteId || '',
+        prestador: prestadorId || '',
+        dataPrevisao,
+        descricao: initialData.descricao,
+        servicos: initialData.servicos,
+        produtos: produtosConvertidos,
+        valorTotal: initialData.valorTotal,
+        valorServicos: initialData.valorServicos,
+        valorProdutos: initialData.valorProdutos
       };
     }
     return {
