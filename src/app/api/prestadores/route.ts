@@ -1,30 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import clientPromise from '@/lib/mongodb';
 
 export async function GET() {
   try {
     const client = await clientPromise;
     const db = client.db("assistencia_tecnica");
-    const prestadores = await db
-      .collection("prestadors")
-      .find({})
-      .toArray();
-
+    
+    const prestadores = await db.collection("prestadores").find({}).toArray();
     return NextResponse.json(prestadores);
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Erro ao buscar prestadores' }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: "Erro ao buscar prestadores" }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    await connectDB();
-    const prestador = await mongoose.model('Prestador').create(body);
+    const client = await clientPromise;
+    const db = client.db("assistencia_tecnica");
+    
+    const prestador = await db.collection("prestadores").insertOne(body);
     return NextResponse.json(prestador, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar prestador:', error);
-    return NextResponse.json({ error: 'Erro ao criar prestador' }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao criar prestador" }, { status: 500 });
   }
 }
