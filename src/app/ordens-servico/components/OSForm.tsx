@@ -7,8 +7,8 @@ import ProdutoForm from './ProdutoForm';
 interface FormData {
   numero?: string;
   status?: string;
-  cliente: string;
-  prestador: string;
+  cliente: string | Cliente;
+  prestador: string | Prestador;
   dataPrevisao: string;
   descricao: string;
   servicos: Array<{
@@ -18,7 +18,7 @@ interface FormData {
     total: number;
   }>;
   produtos: Array<{
-    descricao: string;
+    produto: string | Produto;
     quantidade: number;
     precoUnitario: number;
     total: number;
@@ -130,7 +130,7 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
       ...prev,
       produtos: [
         ...prev.produtos,
-        { descricao: '', quantidade: 1, precoUnitario: 0, total: 0 }
+        { produto: '', quantidade: 1, precoUnitario: 0, total: 0 }
       ]
     }));
   };
@@ -166,61 +166,47 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
     onSubmit(formData);
   };
 
-  const handleProdutoSubmit = async (produtoData: any) => {
-    try {
-      const response = await fetch('/api/produtos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(produtoData),
-      });
-
-      if (response.ok) {
-        const novoProduto = await response.json();
-        produtos.push(novoProduto);
-        setShowProdutoForm(false);
-      }
-    } catch (error) {
-      console.error('Erro ao criar produto:', error);
-    }
+  const handleProdutoSubmit = (produtoData: any) => {
+    setFormData(prev => ({
+      ...prev,
+      produtos: [
+        ...prev.produtos,
+        {
+          produto: produtoData._id,
+          quantidade: 1,
+          precoUnitario: produtoData.precoUnitario,
+          total: produtoData.precoUnitario
+        }
+      ]
+    }));
+    setShowProdutoForm(false);
   };
+
+  useEffect(() => {
+    if (formData.produtos.length > 0) {
+      const valorProdutos = formData.produtos.reduce((acc, curr) => acc + curr.total, 0);
+      setFormData(prev => ({
+        ...prev,
+        valorProdutos,
+        valorTotal: prev.valorServicos + valorProdutos
+      }));
+    }
+  }, [formData.produtos]);
+
+  useEffect(() => {
+    if (formData.servicos.length > 0) {
+      const valorServicos = formData.servicos.reduce((acc, curr) => acc + curr.total, 0);
+      setFormData(prev => ({
+        ...prev,
+        valorServicos,
+        valorTotal: valorServicos + prev.valorProdutos
+      }));
+    }
+  }, [formData.servicos]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Número da OS</label>
-          <input
-            type="text"
-            name="numero"
-            value={formData.numero}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        {isEditing && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            >
-              <option value="aberto">Aberto</option>
-              <option value="em_andamento">Em Andamento</option>
-              <option value="concluido">Concluído</option>
-              <option value="cancelado">Cancelado</option>
-            </select>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700">Cliente</label>
           <select
@@ -231,9 +217,9 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
             required
           >
             <option value="">Selecione um cliente</option>
-            {clientes.map(c => (
-              <option key={c._id} value={c._id}>
-                {c.nome}
+            {clientes.map(cliente => (
+              <option key={cliente._id} value={cliente._id}>
+                {cliente.nome}
               </option>
             ))}
           </select>
@@ -249,27 +235,42 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
             required
           >
             <option value="">Selecione um prestador</option>
-            {prestadores.map(p => (
-              <option key={p._id} value={p._id}>
-                {p.nome}
+            {prestadores.map(prestador => (
+              <option key={prestador._id} value={prestador._id}>
+                {prestador.nome}
               </option>
             ))}
           </select>
         </div>
-      </div>
 
-      <div>
-        <label htmlFor="dataPrevisao" className="block text-sm font-medium text-gray-700">
-          Data de Conclusão
-        </label>
-        <input
-          type="date"
-          id="dataPrevisao"
-          name="dataPrevisao"
-          value={formData.dataPrevisao}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Data Prevista</label>
+          <input
+            type="date"
+            name="dataPrevisao"
+            value={formData.dataPrevisao}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        {isEditing && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="aberto">Aberto</option>
+              <option value="em_andamento">Em Andamento</option>
+              <option value="concluido">Concluído</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div>
@@ -278,26 +279,26 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
           name="descricao"
           value={formData.descricao}
           onChange={handleChange}
+          rows={4}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           required
         />
       </div>
 
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
+      <div>
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">Serviços</h3>
           <button
             type="button"
             onClick={adicionarServico}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
           >
             Adicionar Serviço
           </button>
         </div>
-
         <div className="space-y-4">
           {formData.servicos.map((servico, index) => (
-            <div key={index} className="grid grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div key={index} className="grid grid-cols-5 gap-4">
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Descrição</label>
                 <input
@@ -330,15 +331,6 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
                   required
                 />
               </div>
-              <div className="col-span-3">
-                <label className="block text-sm font-medium text-gray-700">Total</label>
-                <input
-                  type="number"
-                  value={servico.total}
-                  readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
-                />
-              </div>
               <div className="flex items-end">
                 <button
                   type="button"
@@ -353,39 +345,44 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
+      <div>
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">Produtos</h3>
-          <div className="flex gap-2">
+          <div className="space-x-2">
             <button
               type="button"
               onClick={() => setShowProdutoForm(true)}
-              className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md"
             >
               Novo Produto
             </button>
             <button
               type="button"
               onClick={adicionarProduto}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
             >
-              Adicionar Produto
+              Adicionar Existente
             </button>
           </div>
         </div>
-
         <div className="space-y-4">
           {formData.produtos.map((produto, index) => (
-            <div key={index} className="grid grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div key={index} className="grid grid-cols-5 gap-4">
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Descrição</label>
-                <input
-                  type="text"
-                  value={produto.descricao}
-                  onChange={(e) => handleProdutoChange(index, 'descricao', e.target.value)}
+                <label className="block text-sm font-medium text-gray-700">Produto</label>
+                <select
+                  value={produto.produto}
+                  onChange={(e) => handleProdutoChange(index, 'produto', e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Selecione um produto</option>
+                  {produtos.map(p => (
+                    <option key={p._id} value={p._id}>
+                      {p.nome}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Quantidade</label>
@@ -407,15 +404,6 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
                   onChange={(e) => handleProdutoChange(index, 'precoUnitario', Number(e.target.value))}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
-              </div>
-              <div className="col-span-3">
-                <label className="block text-sm font-medium text-gray-700">Total</label>
-                <input
-                  type="number"
-                  value={produto.total}
-                  readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
                 />
               </div>
               <div className="flex items-end">
