@@ -1,30 +1,34 @@
 import React from 'react';
-import './globals.css';
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import Navbar from '@/components/Navbar';
+import './globals.css';
+import { Providers } from './providers';
+import { getServerSession } from 'next-auth';
+import AuthNavbar from '@/components/AuthNavbar';
+import type { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Sistema de Ordem de Serviço',
-  description: 'Sistema de gerenciamento de ordens de serviço',
+  title: 'Sistema de Ordens de Serviço',
+  description: 'Sistema para gerenciamento de ordens de serviço',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession();
+
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-100">
-          <Navbar />
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <Providers>
+          {session && <AuthNavbar />}
+          <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             {children}
           </main>
-        </div>
+        </Providers>
       </body>
     </html>
   );

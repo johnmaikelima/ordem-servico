@@ -1,13 +1,14 @@
 import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+  throw new Error('Por favor, adicione sua URL do MongoDB Atlas no arquivo .env.local');
 }
 
 const uri = process.env.MONGODB_URI;
 const options = {
-  ssl: true,
-  directConnection: true
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
 };
 
 let client;
@@ -28,4 +29,13 @@ if (process.env.NODE_ENV === 'development') {
   clientPromise = client.connect();
 }
 
-export default clientPromise;
+export async function connectToDatabase() {
+  try {
+    const client = await clientPromise;
+    const db = client.db();
+    return { db, client };
+  } catch (error) {
+    console.error('Erro ao conectar ao MongoDB:', error);
+    throw new Error('Não foi possível conectar ao banco de dados');
+  }
+}
