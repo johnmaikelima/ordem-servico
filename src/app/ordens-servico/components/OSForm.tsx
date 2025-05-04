@@ -18,10 +18,11 @@ interface FormData {
     total: number;
   }>;
   produtos: Array<{
-    produto: string;
+    produto: string | Produto;
     quantidade: number;
     precoUnitario: number;
     total: number;
+    descricao: string;
   }>;
   valorTotal: number;
   valorServicos: number;
@@ -53,6 +54,7 @@ interface Props {
       quantidade: number;
       precoUnitario: number;
       total: number;
+      descricao: string;
     }>;
     valorTotal: number;
     valorServicos: number;
@@ -100,6 +102,13 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
       valorServicos: 0,
       valorProdutos: 0
     };
+  });
+
+  const [produtoTemp, setProdutoTemp] = useState({
+    produto: '',
+    quantidade: 1,
+    precoUnitario: 0,
+    descricao: ''
   });
 
   const [showProdutoForm, setShowProdutoForm] = useState(false);
@@ -169,7 +178,7 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
       ...prev,
       produtos: [
         ...prev.produtos,
-        { produto: '', quantidade: 1, precoUnitario: 0, total: 0 }
+        { produto: '', quantidade: 1, precoUnitario: 0, total: 0, descricao: '' }
       ]
     }));
   };
@@ -200,6 +209,26 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
     });
   };
 
+  const handleAddProduto = () => {
+    if (!produtoTemp.produto && !produtoTemp.descricao) {
+      alert('Informe o produto ou sua descrição');
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      produtos: [...prev.produtos, produtoTemp],
+      valorProdutos: prev.valorProdutos + (produtoTemp.quantidade * produtoTemp.precoUnitario)
+    }));
+
+    setProdutoTemp({
+      produto: '',
+      quantidade: 1,
+      precoUnitario: 0,
+      descricao: ''
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -214,7 +243,8 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
           produto: produtoData._id,
           quantidade: 1,
           precoUnitario: produtoData.precoUnitario,
-          total: produtoData.precoUnitario
+          total: produtoData.precoUnitario,
+          descricao: ''
         }
       ]
     }));
@@ -405,57 +435,120 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
           </div>
         </div>
         <div className="space-y-4">
-          {formData.produtos.map((produto, index) => (
-            <div key={index} className="grid grid-cols-5 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Produto</label>
-                <select
-                  value={produto.produto}
-                  onChange={(e) => handleProdutoChange(index, 'produto', e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Selecione um produto</option>
-                  {produtos.map(p => (
-                    <option key={p._id} value={p._id}>
-                      {p.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Quantidade</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={produto.quantidade}
-                  onChange={(e) => handleProdutoChange(index, 'quantidade', Number(e.target.value))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Preço Unitário</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={produto.precoUnitario}
-                  onChange={(e) => handleProdutoChange(index, 'precoUnitario', Number(e.target.value))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => removerProduto(index)}
-                  className="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
-                >
-                  Remover
-                </button>
-              </div>
+          <h3 className="text-lg font-medium">Produtos</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Produto Cadastrado (opcional)
+              </label>
+              <select
+                name="produto"
+                value={produtoTemp.produto}
+                onChange={e => setProdutoTemp({
+                  ...produtoTemp,
+                  produto: e.target.value,
+                  precoUnitario: produtos.find(p => p._id === e.target.value)?.precoUnitario || 0
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              >
+                <option value="">Selecione um produto</option>
+                {produtos.map(produto => (
+                  <option key={produto._id} value={produto._id}>
+                    {produto.nome}
+                  </option>
+                ))}
+              </select>
             </div>
-          ))}
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Descrição do Produto
+              </label>
+              <input
+                type="text"
+                name="descricao"
+                value={produtoTemp.descricao}
+                onChange={e => setProdutoTemp({
+                  ...produtoTemp,
+                  descricao: e.target.value
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                placeholder="Descreva o produto se não estiver cadastrado"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Quantidade
+              </label>
+              <input
+                type="number"
+                name="quantidade"
+                value={produtoTemp.quantidade}
+                onChange={e => setProdutoTemp({
+                  ...produtoTemp,
+                  quantidade: Number(e.target.value)
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                min="1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Valor Unitário
+              </label>
+              <input
+                type="number"
+                name="valorUnitario"
+                value={produtoTemp.precoUnitario}
+                onChange={e => setProdutoTemp({
+                  ...produtoTemp,
+                  precoUnitario: Number(e.target.value)
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                step="0.01"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAddProduto}
+            className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
+            Adicionar Produto
+          </button>
+
+          {formData.produtos.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Produtos Adicionados</h4>
+              <ul className="divide-y divide-gray-200">
+                {formData.produtos.map((item, index) => (
+                  <li key={index} className="py-2 flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">
+                        {typeof item.produto === 'string' 
+                          ? produtos.find(p => p._id === item.produto)?.nome || item.descricao 
+                          : item.produto.nome || item.descricao}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Qtd: {item.quantidade} x R$ {item.precoUnitario.toFixed(2)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removerProduto(index)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Remover
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 

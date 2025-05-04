@@ -1,7 +1,6 @@
 export interface Endereco {
   rua: string;
   numero: string;
-  complemento?: string;
   bairro: string;
   cidade: string;
   estado: string;
@@ -9,55 +8,44 @@ export interface Endereco {
 }
 
 export interface Cliente {
-  _id: string;
+  _id?: string;
   nome: string;
-  email: string;
   telefone: string;
-  cpfCnpj: string;
+  email: string;
   endereco: Endereco;
 }
 
 export interface Prestador {
-  _id: string;
+  _id?: string;
   nome: string;
-  email: string;
   telefone: string;
-  cpfCnpj: string;
+  email: string;
   especialidade: string;
 }
 
 export interface Produto {
-  _id: string;
+  _id?: string;
   nome: string;
-  descricao: string;
-  precoUnitario: number;
-  estoque: number;
+  descricao?: string;
+  preco: number;
 }
 
-export type StatusOS = 'aberto' | 'em_andamento' | 'concluido' | 'cancelado';
+export interface ItemOS {
+  produto: string | Produto;
+  quantidade: number;
+  valorUnitario: number;
+  descricao?: string;
+}
 
 export interface OrdemServico {
-  _id: string;
+  _id?: string;
   numero: string;
+  data: string;
   cliente: string | Cliente;
   prestador: string | Prestador;
-  dataPrevisao: string;
-  dataCriacao: string;
-  descricao: string;
-  status: StatusOS;
-  servicos: Array<{
-    descricao: string;
-    quantidade: number;
-    precoUnitario: number;
-    total: number;
-  }>;
-  produtos: Array<{
-    produto: string | Produto;
-    quantidade: number;
-    precoUnitario: number;
-    total: number;
-  }>;
+  status: string;
+  descricaoServico: string;
+  produtos: ItemOS[];
   valorTotal: number;
-  valorServicos: number;
-  valorProdutos: number;
+  observacoes?: string;
 }
