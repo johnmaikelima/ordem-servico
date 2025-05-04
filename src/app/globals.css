@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos de impressão */
+@media print {
+  @page {
+    margin: 15mm;
+    size: A4;
+  }
+
+  /* Esconde elementos que não devem ser impressos */
+  body > *:not(#__next) {
+    display: none !important;
+  }
+
+  /* Remove backgrounds e ajusta cores */
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Esconde elementos desnecessários na impressão */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Remove sombras e bordas arredondadas */
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print\:rounded-none {
+    border-radius: 0 !important;
+  }
+
+  /* Garante que o conteúdo da OS seja impresso corretamente */
+  .fixed {
+    position: static !important;
+  }
+
+  /* Ajusta o layout para impressão */
+  #__next {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Força o modal a ocupar toda a página */
+  #__next > div {
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    background: white !important;
+  }
+}
