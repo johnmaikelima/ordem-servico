@@ -8,7 +8,7 @@ export interface Endereco {
 }
 
 export interface Cliente {
-  _id?: string;
+  _id: string;
   nome: string;
   telefone: string;
   email: string;
@@ -16,25 +16,17 @@ export interface Cliente {
 }
 
 export interface Prestador {
-  _id?: string;
+  _id: string;
   nome: string;
   telefone: string;
   email: string;
   especialidade: string;
 }
 
-export interface Produto {
-  _id?: string;
-  nome: string;
-  descricao?: string;
-  preco: number;
-}
-
-export interface ItemOS {
-  produto: string | Produto;
+export interface ItemProduto {
+  descricao: string;
   quantidade: number;
   valorUnitario: number;
-  descricao?: string;
 }
 
 export interface OrdemServico {
@@ -45,7 +37,7 @@ export interface OrdemServico {
   prestador: string | Prestador;
   status: string;
   descricaoServico: string;
-  produtos: ItemOS[];
+  produtos: ItemProduto[];
   valorTotal: number;
   observacoes?: string;
 }
