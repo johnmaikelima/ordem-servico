@@ -117,8 +117,6 @@ const OSPrint: React.FC<OSPrintProps> = ({ ordem, onClose }) => {
                     ${empresa.endereco.complemento ? ` - ${empresa.endereco.complemento}` : ''}
                     <br />
                     ${empresa.endereco.bairro} - ${empresa.endereco.cidade}/${empresa.endereco.estado}
-                    <br />
-                    CEP: ${empresa.endereco.cep}
                   </div>
                 </div>
               </div>
@@ -126,56 +124,66 @@ const OSPrint: React.FC<OSPrintProps> = ({ ordem, onClose }) => {
               <div class="info-box">
                 <div class="grid">
                   <div>
-                    <span class="label">Data de Abertura:</span>
-                    ${new Date(ordem.dataCriacao).toLocaleDateString('pt-BR')}
+                    <div class="label">Cliente</div>
+                    <div style="font-size: 18px; font-weight: bold;">
+                      ${typeof ordem.cliente === 'object' && ordem.cliente ? ordem.cliente.nome : ''}
+                    </div>
+                    <div style="margin-top: 4px; font-size: 14px;">
+                      ${typeof ordem.cliente === 'object' && ordem.cliente ? `
+                        CPF/CNPJ: ${ordem.cliente.cpfCnpj}<br />
+                        Tel: ${ordem.cliente.telefone}<br />
+                        Email: ${ordem.cliente.email}
+                      ` : ''}
+                    </div>
                   </div>
                   <div>
-                    <span class="label">Data de Conclusão:</span>
-                    ${ordem.dataPrevisao ? new Date(ordem.dataPrevisao).toLocaleDateString('pt-BR') : 'Não definida'}
+                    <div class="label">Endereço</div>
+                    <div style="font-size: 14px;">
+                      ${typeof ordem.cliente === 'object' && ordem.cliente ? `
+                        ${ordem.cliente.endereco.rua}, ${ordem.cliente.endereco.numero}
+                        ${ordem.cliente.endereco.complemento ? ` - ${ordem.cliente.endereco.complemento}` : ''}
+                        <br />
+                        ${ordem.cliente.endereco.bairro} - ${ordem.cliente.endereco.cidade}/${ordem.cliente.endereco.estado}
+                      ` : ''}
+                    </div>
                   </div>
-                  <div>
-                    <span class="label">Status:</span>
-                    ${ordem.status.charAt(0).toUpperCase() + ordem.status.slice(1).replace('_', ' ')}
-                  </div>
-                </div>
-              </div>
-
-              <div class="grid">
-                <div class="info-box">
-                  <h3>Dados do Cliente</h3>
-                  <div>${typeof ordem.cliente === 'object' ? ordem.cliente.nome : ''}</div>
-                  <div>${typeof ordem.cliente === 'object' ? ordem.cliente.cpfCnpj : ''}</div>
-                  <div>${typeof ordem.cliente === 'object' ? ordem.cliente.telefone : ''}</div>
-                  <div>${typeof ordem.cliente === 'object' ? ordem.cliente.email : ''}</div>
-                  <div>
-                    ${typeof ordem.cliente === 'object' && ordem.cliente && ordem.cliente.endereco ? `
-                      ${ordem.cliente.endereco.rua}, ${ordem.cliente.endereco.numero}
-                      ${ordem.cliente.endereco.complemento ? ` - ${ordem.cliente.endereco.complemento}` : ''}
-                      <br />
-                      ${ordem.cliente.endereco.bairro} - ${ordem.cliente.endereco.cidade}/${ordem.cliente.endereco.estado}
-                      <br />
-                      CEP: ${ordem.cliente.endereco.cep}
-                    ` : ''}
-                  </div>
-                </div>
-
-                <div class="info-box">
-                  <h3>Técnico Responsável</h3>
-                  <div>${typeof ordem.prestador === 'object' ? ordem.prestador.nome : ''}</div>
-                  <div>${typeof ordem.prestador === 'object' ? ordem.prestador.especialidade : ''}</div>
-                  <div>${typeof ordem.prestador === 'object' ? ordem.prestador.telefone : ''}</div>
-                  <div>${typeof ordem.prestador === 'object' ? ordem.prestador.email : ''}</div>
                 </div>
               </div>
 
               <div class="info-box">
-                <h3>Descrição do Serviço</h3>
-                <p>${ordem.descricao}</p>
+                <div class="grid">
+                  <div>
+                    <div class="label">Prestador</div>
+                    <div style="font-size: 18px; font-weight: bold;">
+                      ${typeof ordem.prestador === 'object' && ordem.prestador ? ordem.prestador.nome : ''}
+                    </div>
+                    <div style="margin-top: 4px; font-size: 14px;">
+                      ${typeof ordem.prestador === 'object' && ordem.prestador ? `
+                        CPF/CNPJ: ${ordem.prestador.cpfCnpj}<br />
+                        Tel: ${ordem.prestador.telefone}<br />
+                        Email: ${ordem.prestador.email}
+                      ` : ''}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="label">Informações</div>
+                    <div style="font-size: 14px;">
+                      Data de Criação: ${new Date(ordem.dataCriacao).toLocaleDateString('pt-BR')}<br />
+                      Data Prevista: ${new Date(ordem.dataPrevisao).toLocaleDateString('pt-BR')}<br />
+                      Status: ${ordem.status}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              ${ordem.servicos && ordem.servicos.length > 0 ? `
-                <div>
-                  <h3>Serviços Realizados</h3>
+              <div class="info-box">
+                <div class="label">Descrição</div>
+                <div style="margin-top: 8px; white-space: pre-wrap;">${ordem.descricao}</div>
+              </div>
+
+              ${ordem.servicos.length > 0 ? `
+                <div class="info-box">
+                  <div class="label">Serviços</div>
                   <table>
                     <thead>
                       <tr>
@@ -199,25 +207,25 @@ const OSPrint: React.FC<OSPrintProps> = ({ ordem, onClose }) => {
                 </div>
               ` : ''}
 
-              ${ordem.produtos && ordem.produtos.length > 0 ? `
-                <div>
-                  <h3>Peças/Produtos Utilizados</h3>
+              ${ordem.produtos.length > 0 ? `
+                <div class="info-box">
+                  <div class="label">Produtos</div>
                   <table>
                     <thead>
                       <tr>
-                        <th>Descrição</th>
+                        <th>Produto</th>
                         <th style="text-align: right">Qtd</th>
                         <th style="text-align: right">Valor Unit.</th>
                         <th style="text-align: right">Total</th>
                       </tr>
                     </thead>
                     <tbody>
-                      ${ordem.produtos.map(produto => `
+                      ${ordem.produtos.map(item => `
                         <tr>
-                          <td>${produto.descricao}</td>
-                          <td style="text-align: right">${produto.quantidade}</td>
-                          <td style="text-align: right">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.precoUnitario)}</td>
-                          <td style="text-align: right">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.total)}</td>
+                          <td>${typeof item.produto === 'object' && item.produto ? item.produto.nome : ''}</td>
+                          <td style="text-align: right">${item.quantidade}</td>
+                          <td style="text-align: right">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.precoUnitario)}</td>
+                          <td style="text-align: right">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total)}</td>
                         </tr>
                       `).join('')}
                     </tbody>
