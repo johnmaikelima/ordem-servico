@@ -61,26 +61,27 @@ interface Props {
   isEditing?: boolean;
 }
 
+function getIdFromStringOrObject(value: string | { _id: string } | null | undefined): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value._id;
+}
+
 export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCancel, initialData, isEditing }: Props) {
   const [formData, setFormData] = useState<FormData>(() => {
     if (initialData) {
-      const clienteId = typeof initialData.cliente === 'object' && initialData.cliente ? initialData.cliente._id : initialData.cliente;
-      const prestadorId = typeof initialData.prestador === 'object' && initialData.prestador ? initialData.prestador._id : initialData.prestador;
-      const dataPrevisao = initialData.dataPrevisao ? new Date(initialData.dataPrevisao).toISOString().split('T')[0] : '';
-      const produtosConvertidos = initialData.produtos.map(p => ({
-        ...p,
-        produto: typeof p.produto === 'object' && p.produto ? p.produto._id : p.produto
-      }));
-
       return {
         numero: initialData.numero || '',
         status: initialData.status || 'aberto',
-        cliente: clienteId || '',
-        prestador: prestadorId || '',
-        dataPrevisao,
+        cliente: getIdFromStringOrObject(initialData.cliente),
+        prestador: getIdFromStringOrObject(initialData.prestador),
+        dataPrevisao: initialData.dataPrevisao ? new Date(initialData.dataPrevisao).toISOString().split('T')[0] : '',
         descricao: initialData.descricao,
         servicos: initialData.servicos,
-        produtos: produtosConvertidos,
+        produtos: initialData.produtos.map(p => ({
+          ...p,
+          produto: getIdFromStringOrObject(p.produto)
+        })),
         valorTotal: initialData.valorTotal,
         valorServicos: initialData.valorServicos,
         valorProdutos: initialData.valorProdutos
