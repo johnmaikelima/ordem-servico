@@ -7,8 +7,8 @@ import ProdutoForm from './ProdutoForm';
 interface FormData {
   numero?: string;
   status?: string;
-  cliente: string | Cliente;
-  prestador: string | Prestador;
+  cliente: string;
+  prestador: string;
   dataPrevisao: string;
   descricao: string;
   servicos: Array<{
@@ -18,7 +18,7 @@ interface FormData {
     total: number;
   }>;
   produtos: Array<{
-    produto: string | Produto;
+    produto: string;
     quantidade: number;
     precoUnitario: number;
     total: number;
@@ -34,7 +34,30 @@ interface Props {
   clientes: Cliente[];
   prestadores: Prestador[];
   produtos: Produto[];
-  initialData?: FormData;
+  initialData?: {
+    _id?: string;
+    numero?: string;
+    status?: string;
+    cliente: string | Cliente;
+    prestador: string | Prestador;
+    dataPrevisao: string;
+    descricao: string;
+    servicos: Array<{
+      descricao: string;
+      quantidade: number;
+      precoUnitario: number;
+      total: number;
+    }>;
+    produtos: Array<{
+      produto: string | Produto;
+      quantidade: number;
+      precoUnitario: number;
+      total: number;
+    }>;
+    valorTotal: number;
+    valorServicos: number;
+    valorProdutos: number;
+  };
   isEditing?: boolean;
 }
 
@@ -45,7 +68,11 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
         ...initialData,
         cliente: typeof initialData.cliente === 'object' && initialData.cliente ? initialData.cliente._id : initialData.cliente || '',
         prestador: typeof initialData.prestador === 'object' && initialData.prestador ? initialData.prestador._id : initialData.prestador || '',
-        dataPrevisao: initialData.dataPrevisao ? new Date(initialData.dataPrevisao).toISOString().split('T')[0] : ''
+        dataPrevisao: initialData.dataPrevisao ? new Date(initialData.dataPrevisao).toISOString().split('T')[0] : '',
+        produtos: initialData.produtos.map(p => ({
+          ...p,
+          produto: typeof p.produto === 'object' && p.produto ? p.produto._id : p.produto
+        }))
       };
     }
     return {
@@ -435,7 +462,7 @@ export default function OSForm({ clientes, prestadores, produtos, onSubmit, onCa
             </dd>
           </div>
           <div>
-            <dt className="text-sm font-medium text-gray-500">Total Geral</dt>
+            <dt className="text-sm font-medium text-gray-700">Total Geral</dt>
             <dd className="mt-1 text-lg font-semibold text-gray-900">
               R$ {formData.valorTotal.toFixed(2)}
             </dd>
